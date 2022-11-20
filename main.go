@@ -13,14 +13,14 @@ import (
 
 func main() {
 	// Flags for the command
-	repo := flag.String("r", "", "The repo for which to check permissions. If blank, the current repo is used.")
-	friendly := flag.Bool("f", false, "Prints a friendly message instead of the permission constant.")
+	repo := flag.String("r", "", "The repo for which to check roles. If blank, the current repo is used.")
+	friendly := flag.Bool("f", false, "Prints a friendly message instead of the role constant.")
 	// Overrides default help message to inform about args
 	defaultUsage := flag.Usage
 	flag.Usage = func() {
 		defaultUsage()
-		fmt.Println("  List permissions as space-separated arguments after any other flags to check if the current user has one of those permissions.")
-		fmt.Println("  Will exit with a non-zero status if the user does not have one of the specified permissions.")
+		fmt.Println("  List roles as space-separated arguments after any other flags to check if the current user has one of those roles.")
+		fmt.Println("  Will exit with a non-zero status if the user does not have one of the specified roles.")
 	}
 	flag.Parse()
 	var roles = flag.Args()
@@ -31,7 +31,7 @@ func main() {
 		// If repo provided, add it to the command
 		ghArgs = append(ghArgs, *repo)
 	} else {
-		// Here we write the current repo to the variable but we don't add it to the command
+		// Write the current repo to the variable but we don't add it to the command
 		// It's for later
 		repo = currentRepoName()
 	}
@@ -46,7 +46,7 @@ func main() {
 
 	// Parse the output
 	var result struct {
-		ViewerPermission string `json:"viewerPermission"`
+		Role string `json:"viewerPermission"`
 	}
 	err = json.Unmarshal(stdOut.Bytes(), &result)
 	if err != nil {
@@ -56,25 +56,25 @@ func main() {
 
 	success := func() {
 		if *friendly {
-			fmt.Printf("Current user has %s permission on %s.\n", result.ViewerPermission, *repo)
+			fmt.Printf("Current user has %s role on %s.\n", result.Role, *repo)
 		} else {
-			fmt.Println(result.ViewerPermission)
+			fmt.Println(result.Role)
 		}
 	}
 
-	// If no roles were specified, print the permission
+	// If no roles were specified, print the role
 	if len(roles) == 0 {
 		success()
 		os.Exit(0)
 	}
-	// Otherwise, check if the user has one of the specified permissions
+	// Otherwise, check if the user has one of the specified roles
 	for _, role := range roles {
-		if strings.EqualFold(result.ViewerPermission, role) {
+		if strings.EqualFold(result.Role, role) {
 			success()
 			os.Exit(0)
 		}
 	}
-	// If we got here, the user doesn't have any of the specified permissions
+	// If we got here, the user doesn't have any of the specified roles
 
 	s := ""
 	if len(roles) > 1 {
@@ -83,8 +83,8 @@ func main() {
 
 	log.Fatal(
 		fmt.Errorf(
-			"User does not have permission%s on %s: %s; found %s",
-			s, *repo, strings.Join(roles, ", "), result.ViewerPermission,
+			"User does not have role%s on %s: %s; found %s",
+			s, *repo, strings.Join(roles, ", "), result.Role,
 		),
 	)
 	os.Exit(1)
