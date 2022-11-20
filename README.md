@@ -4,6 +4,12 @@ This simple extension allows you to check the current user's role on a repo.  It
 
 For example, if you have a script that adds a protected tag to a commit then pushes it to the repo, you can use this command to ensure that the user has the necessary permissions to do so.
 
+__Notes:__
+
+- This extension is not meant to be used as a security measure.  It is meant to be used as a convenience for scripts that need to check the user's role.
+
+- This extension does __not__ currently check the user's role in an __organization__.  It __only__ checks the user's role in a __repository__.
+
 ## Installation
 
 ```bash
