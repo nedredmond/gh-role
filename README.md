@@ -18,7 +18,7 @@ gh extension install nedredmond/gh-role
 
 ## Usage
 
-Without listing role names, `gh role` simple returns the current user's role. This returns the role name and exits with code 0.
+Without listing role names, `gh role` simply returns the current user's role. This returns the role name and exits with code 0.
 
 - In a repository that the user owns:
 
