@@ -6,6 +6,8 @@ For example, if you have a script that adds a protected tag to a commit then pus
 
 __Notes:__
 
+- This is an extension for the [GitHub CLI](https://cli.github.com/) and requires that you have it installed.
+
 - This extension is not meant to be used as a security measure.  It is meant to be used as a convenience for scripts that need to check the user's role.
 
 - This extension does __not__ currently check the user's role in an __organization__.  It __only__ checks the user's role in a __repository__.
