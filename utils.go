@@ -27,7 +27,7 @@ func evaluate(entity string, userRole string, roles []string, friendly bool) {
 func succeed(entity string, userRole string, friendly bool) {
 	roleString := strings.ToLower(userRole)
 	if friendly {
-		fmt.Printf("Current user has %s role in %s.\n", roleString, entity)
+		fmt.Printf("User has %s role in %s.\n", roleString, entity)
 	} else {
 		fmt.Println(roleString)
 	}

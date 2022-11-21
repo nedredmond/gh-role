@@ -8,8 +8,8 @@ import (
 func main() {
 	// Flags for the command
 	repo := flag.String("r", "", "The repo for which to check roles. If blank, the current repo is used.")
-	org := flag.String("o", "", "The org for which to check roles. If blank, defaults to repo check. If present, `-r` flag will be ignored.")
-	friendly := flag.Bool("f", false, "Prints a friendly message. Otherwise, prints a machine-readable string.")
+	org := flag.String("o", "", "The org for which to check roles. If blank, defaults to repo check. If present, repo flag will be ignored.")
+	friendly := flag.Bool("f", false, "Prints a friendly message. Otherwise, prints a machine-readable role name.")
 	// Overrides default help message to inform about args
 	defaultUsage := flag.Usage
 	flag.Usage = func() {
