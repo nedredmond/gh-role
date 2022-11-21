@@ -82,6 +82,7 @@ For organizations, the command will exit with exit code 1 if the user is not a m
 
 - __`-h`__ Prints available flags and usage to the CLI.
 - __`-r`__ The repo to check roles on.  Defaults to the current repo.
+- __`-o`__ The org to check roles on. If blank, defaults to repo check.
 - __`-f`__ Prints a friendly message instead of the machine-readable role.
   - i.e., `User has admin role in nedredmond/gh-role.`
 - After any flags, list the roles you want to verify, separated by spaces. If none are provided, the command will print your current role instead.
