@@ -9,11 +9,13 @@ import (
 	"strings"
 
 	"github.com/cli/go-gh"
+	graphql "github.com/cli/shurcooL-graphql"
 )
 
 func main() {
 	// Flags for the command
 	repo := flag.String("r", "", "The repo for which to check roles. If blank, the current repo is used.")
+	org := flag.String("o", "", "The org for which to check roles. If blank, defaults to repo check. If present, `-r` flag will be ignored.")
 	friendly := flag.Bool("f", false, "Prints a friendly message instead of the role constant.")
 	// Overrides default help message to inform about args
 	defaultUsage := flag.Usage
@@ -24,6 +26,49 @@ func main() {
 	}
 	flag.Parse()
 	var roles = flag.Args()
+
+	// strategy: use GQL to get own name, then use
+	if *org != "" {
+		client, err := gh.GQLClient(nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var Query OrgQuery
+		err = client.Query("ViewerOrgRole", &Query, _orgVars(*org, nil))
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, edge := range Query.Viewer.Organization.MembersWithRole.Edges {
+			if edge.Node.IsViewer {
+				if *friendly {
+					fmt.Println("You are a", edge.Role, "in", *org)
+				} else {
+					fmt.Println(edge.Role)
+				}
+				os.Exit(0)
+			}
+		}
+		membersChecked := len(Query.Viewer.Organization.MembersWithRole.Edges)
+		totalMembers := Query.Viewer.Organization.MembersWithRole.TotalCount
+		for membersChecked < totalMembers {
+			err = client.Query("ViewerOrgRole", &Query, _orgVars(*org, &Query.Viewer.Organization.MembersWithRole.PageInfo.EndCursor))
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, edge := range Query.Viewer.Organization.MembersWithRole.Edges {
+				if edge.Node.IsViewer {
+					if *friendly {
+						fmt.Println("You are a", edge.Role, "in", *org)
+					} else {
+						fmt.Println(edge.Role)
+					}
+					os.Exit(0)
+				}
+			}
+			membersChecked += len(Query.Viewer.Organization.MembersWithRole.Edges)
+		}
+		log.Fatal("Role could not be determined in ", *org)
+	}
 
 	// Start building the command
 	ghArgs := []string{"repo", "view"}
@@ -41,7 +86,6 @@ func main() {
 	stdOut, _, err := gh.Exec(ghArgs...)
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 
 	// Parse the output
@@ -51,7 +95,6 @@ func main() {
 	err = json.Unmarshal(stdOut.Bytes(), &result)
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 
 	success := func() {
@@ -83,21 +126,45 @@ func main() {
 
 	log.Fatal(
 		fmt.Errorf(
-			"User does not have role%s on %s: %s; found %s",
+			"user does not have role%s on %s: %s; found %s",
 			s, *repo, strings.Join(roles, ", "), result.Role,
 		),
 	)
-	os.Exit(1)
 }
 
 func currentRepoName() *string {
 	repository, err := gh.CurrentRepository()
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 	repoName := repository.Name()
 	return &repoName
+}
+
+type OrgQuery struct {
+	Viewer struct {
+		Organization struct {
+			MembersWithRole struct {
+				Edges []struct {
+					Role string
+					Node struct {
+						IsViewer bool
+					}
+				}
+				TotalCount int
+				PageInfo   struct {
+					EndCursor string
+				}
+			} `graphql:"membersWithRole(first: 100, after: $cursor)"`
+		} `graphql:"organization(login: $org)"`
+	}
+}
+
+func _orgVars(org string, cursor *string) (vars map[string]interface{}) {
+	return map[string]interface{}{
+		"org":    graphql.String(org),
+		"cursor": (*graphql.String)(cursor),
+	}
 }
 
 // For more examples of using go-gh, see:
