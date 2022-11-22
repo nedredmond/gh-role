@@ -76,9 +76,17 @@ For organizations, the command will exit with exit code 1 if the user is not a m
     // Exits with code 0
     ```
 
-- Available roles in order of increading permissions are: `READ`, `TRIAGE`, `WRITE`, `MAINTAIN`, `ADMIN`. For more information, see [GitHub's documentation on repository roles](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/repository-roles-for-an-organization).
+## Roles
 
-### Flags
+### Repository
+
+In order of increading permissions: `READ`, `TRIAGE`, `WRITE`, `MAINTAIN`, `ADMIN`. For more information, see [GitHub's documentation on repository roles](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/repository-roles-for-an-organization).
+
+### Organization
+
+Note that role names returned do not match [the documentation on organization roles](https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles/roles-in-an-organization#about-organization-roles). "Owners" have the `ADMIN` role, and all others, regardless of individual permissions, have the `MEMBER` role. Does not include roles for Enterprise organizations, such as "Billing Manager".
+
+## Flags
 
 - __`-h`__ Prints available flags and usage to the CLI.
 - __`-r`__ The repo to check roles on.  Defaults to the current repo.
@@ -86,3 +94,4 @@ For organizations, the command will exit with exit code 1 if the user is not a m
 - __`-f`__ Prints a friendly message instead of the machine-readable role.
   - i.e., `User has admin role in nedredmond/gh-role.`
 - After any flags, list the roles you want to verify, separated by spaces. If none are provided, the command will print your current role instead.
+  - There is no validation for provided roles and they are not case-sensitive. The only requirement is that the role is spelled correctly.
