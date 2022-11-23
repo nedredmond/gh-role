@@ -15,11 +15,11 @@ type LoginQuery struct {
 	}
 }
 
-func orgRole(org string, team string) (orgRole string) {
-	return getOrgRole(org, team, getLogin())
+func OrgRole(org string, team string) (orgRole string) {
+	return _getOrgRole(org, team, _getLogin())
 }
 
-func getOrgRole(org string, team string, login string) string {
+func _getOrgRole(org string, team string, login string) string {
 	restClient, err := gh.RESTClient(nil)
 	if err != nil {
 		log.Fatal(err)
@@ -37,7 +37,7 @@ func getOrgRole(org string, team string, login string) string {
 	err = restClient.Get(path, &resp)
 	if err != nil {
 		if err.(api.HTTPError).StatusCode == 404 {
-			log.Fatal(fmt.Errorf("user has no role in %s", orgEntity(org, team)))
+			log.Fatal(fmt.Errorf("user has no role in %s", NestedEntityName(org, team)))
 		}
 		log.Fatal(err)
 	}
@@ -45,14 +45,7 @@ func getOrgRole(org string, team string, login string) string {
 	return resp["role"].(string)
 }
 
-func orgEntity(org string, team string) string {
-	if team != "" {
-		return team
-	}
-	return org
-}
-
-func getLogin() string {
+func _getLogin() string {
 	// GitHub CLI doesn't make it easy to get the current user's login.
 	// I could either parse it from the verbose `gh auth status` or make an API call.
 	// Since the status is subject to change, I'll just make the API call.

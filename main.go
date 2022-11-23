@@ -24,7 +24,7 @@ func main() {
 	var roles = flag.Args()
 
 	if *org != "" {
-		err := Evaluate(orgEntity(*org, *team), orgRole(*org, *team), roles, *friendly)
+		err := Evaluate(NestedEntityName(*org, *team), OrgRole(*org, *team), roles, *friendly)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -33,9 +33,9 @@ func main() {
 
 	// Check repo roles
 	if *repo == "" {
-		repo = currentRepoName()
+		repo = _currentRepoName()
 	}
-	err := Evaluate(*repo, repoRole(*repo), roles, *friendly)
+	err := Evaluate(*repo, RepoRole(*repo), roles, *friendly)
 	if err != nil {
 		log.Fatal(err)
 	}

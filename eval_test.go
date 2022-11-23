@@ -22,12 +22,16 @@ func TestEvaluate_fail_role(t *testing.T) {
 	)
 }
 
-func ExampleEvaluate_succeed_noroles_friendly() {
+func TestEvaluate_succeed_noError(t *testing.T) {
+	assert.NoError(t, Evaluate("council", "jedi", []string{}, false))
+}
+
+func ExampleEvaluate_succeed_noRoles_friendly() {
 	Evaluate("council", "jedi", []string{}, true)
 	// Output: User has jedi role in council.
 }
 
-func ExampleEvaluate_succeed_noroles_unfriendly() {
+func ExampleEvaluate_succeed_noRoles_unfriendly() {
 	Evaluate("council", "jedi", []string{}, false)
 	// Output: jedi
 }

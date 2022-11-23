@@ -7,7 +7,7 @@ import (
 	"github.com/cli/go-gh"
 )
 
-func currentRepoName() *string {
+func _currentRepoName() *string {
 	repository, err := gh.CurrentRepository()
 	if err != nil {
 		log.Fatal(err)
@@ -16,7 +16,7 @@ func currentRepoName() *string {
 	return &repoName
 }
 
-func repoRole(repo string) (repoRole string) {
+func RepoRole(repo string) (repoRole string) {
 	// Build the command
 	ghArgs := []string{"repo", "view", repo, "--json", "viewerPermission"}
 

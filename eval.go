@@ -5,24 +5,26 @@ import (
 	"strings"
 )
 
-func Evaluate(entity string, userRole string, roles []string, friendly bool) error {
+func Evaluate(entity string, userRole string, roles []string, friendly bool) (err error) {
 	// If no roles were specified, print the role
 	if len(roles) == 0 {
-		Succeed(entity, userRole, friendly)
+		_succeed(entity, userRole, friendly)
+		return
 	}
 
 	// Otherwise, check if the user has one of the specified roles
 	for _, role := range roles {
 		if strings.EqualFold(userRole, role) {
-			Succeed(entity, userRole, friendly)
+			_succeed(entity, userRole, friendly)
+			return
 		}
 	}
 
 	// If we got here, the user doesn't have any of the specified roles
-	return Fail(entity, userRole, roles)
+	return _fail(entity, userRole, roles)
 }
 
-func Succeed(entity string, userRole string, friendly bool) {
+func _succeed(entity string, userRole string, friendly bool) {
 	roleString := strings.ToLower(userRole)
 	if friendly {
 		fmt.Printf("User has %s role in %s.\n", roleString, entity)
@@ -31,7 +33,7 @@ func Succeed(entity string, userRole string, friendly bool) {
 	}
 }
 
-func Fail(entity string, userRole string, checkedRoles []string) error {
+func _fail(entity string, userRole string, checkedRoles []string) error {
 	s := ""
 	if len(checkedRoles) > 1 {
 		s = "s"
