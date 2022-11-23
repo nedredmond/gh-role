@@ -74,6 +74,10 @@ For organizations, the command will exit with exit code 1 if the user is not a m
     gh role -o my-org admin member
     // member
     // Exits with code 0
+
+    gh role -o my-org -t my-team maintainer
+    // user does not have role in my-team: maintainer; found member
+    // Exits with code 0
     ```
 
 ## Roles
@@ -84,13 +88,18 @@ In order of increading permissions: `READ`, `TRIAGE`, `WRITE`, `MAINTAIN`, `ADMI
 
 ### Organization
 
-Note that role names returned do not match [the documentation on organization roles](https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles/roles-in-an-organization#about-organization-roles). "Owners" have the `ADMIN` role, and all others, regardless of individual permissions, have the `MEMBER` role. Does not include roles for Enterprise organizations, such as "Billing Manager".
+Note that role names returned do not match [the documentation on organization roles](https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles/roles-in-an-organization#about-organization-roles). "Owners" have the `admin` role; the other two are `member` and `billing_manager`. See [the response schema](https://docs.github.com/en/rest/orgs/members#get-organization-membership-for-a-user) for more details..
+
+#### Team
+
+Team roles include `maintainer` and `member`. See [the response schema](https://docs.github.com/en/rest/teams/members#get-team-membership-for-a-user) for more details.
 
 ## Flags
 
 - __`-h`__ Prints available flags and usage to the CLI.
 - __`-r`__ The repo to check roles on.  Defaults to the current repo.
 - __`-o`__ The org to check roles on. If blank, defaults to repo check.
+- __`-t`__ The team for which to check roles. Only valid in combination with org flag.
 - __`-f`__ Prints a friendly message instead of the machine-readable role.
   - i.e., `User has admin role in nedredmond/gh-role.`
 - After any flags, list the roles you want to verify, separated by spaces. If none are provided, the command will print your current role instead.

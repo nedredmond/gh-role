@@ -9,6 +9,7 @@ func main() {
 	// Flags for the command
 	repo := flag.String("r", "", "The repo for which to check roles. If blank, the current repo is used.")
 	org := flag.String("o", "", "The org for which to check roles. If blank, defaults to repo check. If present, repo flag will be ignored.")
+	team := flag.String("t", "", "The team for which to check roles. Only valid in combination with org flag.")
 	friendly := flag.Bool("f", false, "Prints a friendly message. Otherwise, prints a machine-readable role name.")
 	// Overrides default help message to inform about args
 	defaultUsage := flag.Usage
@@ -21,8 +22,7 @@ func main() {
 	var roles = flag.Args()
 
 	if *org != "" {
-		// Check org roles
-		evaluate(*org, orgRole(*org), roles, *friendly)
+		evaluate(orgEntity(*org, *team), orgRole(*org, *team), roles, *friendly)
 	}
 
 	// Check repo roles
