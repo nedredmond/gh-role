@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
 )
 
 func main() {
@@ -22,14 +24,22 @@ func main() {
 	var roles = flag.Args()
 
 	if *org != "" {
-		evaluate(orgEntity(*org, *team), orgRole(*org, *team), roles, *friendly)
+		err := Evaluate(orgEntity(*org, *team), orgRole(*org, *team), roles, *friendly)
+		if err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0)
 	}
 
 	// Check repo roles
 	if *repo == "" {
 		repo = currentRepoName()
 	}
-	evaluate(*repo, repoRole(*repo), roles, *friendly)
+	err := Evaluate(*repo, repoRole(*repo), roles, *friendly)
+	if err != nil {
+		log.Fatal(err)
+	}
+	os.Exit(0)
 }
 
 // For more examples of using go-gh, see:
