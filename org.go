@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/cli/go-gh"
 	"github.com/cli/go-gh/pkg/api"
@@ -14,27 +15,41 @@ type LoginQuery struct {
 	}
 }
 
-func orgRole(org string) (orgRole string) {
-	return getOrgRole(org, getLogin())
+func orgRole(org string, team string) (orgRole string) {
+	return getOrgRole(org, team, getLogin())
 }
 
-func getOrgRole(org string, login string) string {
+func getOrgRole(org string, team string, login string) string {
 	restClient, err := gh.RESTClient(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	path := fmt.Sprintf("orgs/%s/memberships/%s", org, login)
+	// build query
+	query := []string{"orgs", org}
+	if team != "" {
+		query = append(query, "teams", team)
+	}
+	query = append(query, "memberships", login)
+
+	path := strings.Join(query, "/")
 	var resp map[string]interface{}
 	err = restClient.Get(path, &resp)
 	if err != nil {
 		if err.(api.HTTPError).StatusCode == 404 {
-			log.Fatal(fmt.Errorf("user has no role in %s", org))
+			log.Fatal(fmt.Errorf("user has no role in %s", orgEntity(org, team)))
 		}
 		log.Fatal(err)
 	}
 
 	return resp["role"].(string)
+}
+
+func orgEntity(org string, team string) string {
+	if team != "" {
+		return team
+	}
+	return org
 }
 
 func getLogin() string {
