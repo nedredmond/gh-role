@@ -2,18 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/cli/go-gh"
 )
 
-func _currentRepoName() *string {
+func CurrentRepo() *string {
 	repository, err := gh.CurrentRepository()
 	if err != nil {
 		log.Fatal(err)
 	}
-	repoName := repository.Name()
-	return &repoName
+	repo := fmt.Sprintf("%s/%s", repository.Owner(), repository.Name())
+	return &repo
 }
 
 func RepoRole(repo string) (repoRole string) {

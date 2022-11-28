@@ -33,7 +33,7 @@ func main() {
 
 	// Check repo roles
 	if *repo == "" {
-		repo = _currentRepoName()
+		repo = CurrentRepo()
 	}
 	err := Evaluate(*repo, RepoRole(*repo), roles, *friendly)
 	if err != nil {
