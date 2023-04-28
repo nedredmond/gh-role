@@ -12,6 +12,7 @@ func main() {
 	repo := flag.String("r", "", "The repo for which to check roles. If blank, the current repo is used.")
 	org := flag.String("o", "", "The org for which to check roles. If blank, defaults to repo check. If present, repo flag will be ignored.")
 	team := flag.String("t", "", "The team for which to check roles. Only valid in combination with org flag.")
+	user := flag.String("u", "", "The user login for which to check roles. If blank, the current user is used.")
 	friendly := flag.Bool("f", false, "Prints a friendly message. Otherwise, prints a machine-readable role name.")
 	// Overrides default help message to inform about args
 	defaultUsage := flag.Usage
@@ -23,8 +24,13 @@ func main() {
 	flag.Parse()
 	var roles = flag.Args()
 
+	isViewer := *user == ""
+	if isViewer {
+		user = _viewerLogin()
+	}
+
 	if *org != "" {
-		err := Evaluate(NestedEntityName(*org, *team), OrgRole(*org, *team), roles, *friendly)
+		err := Evaluate(*user, NestedEntityName(*org, *team), OrgRole(*org, *team, *user), roles, *friendly)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -32,10 +38,14 @@ func main() {
 	}
 
 	// Check repo roles
-	if *repo == "" {
-		repo = CurrentRepo()
+	repository := _getRepo(*repo)
+	var userRole string
+	if isViewer {
+		userRole = RepoRoleForViewer(repository)
+	} else {
+		userRole = RepoRoleForUser(repository, *user)
 	}
-	err := Evaluate(*repo, RepoRole(*repo), roles, *friendly)
+	err := Evaluate(*user, _getRepoPath(repository), userRole, roles, *friendly)
 	if err != nil {
 		log.Fatal(err)
 	}

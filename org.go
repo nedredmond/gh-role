@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
-	"github.com/cli/go-gh"
-	"github.com/cli/go-gh/pkg/api"
+	"github.com/cli/go-gh/v2/pkg/api"
 )
 
 type LoginQuery struct {
@@ -15,12 +13,8 @@ type LoginQuery struct {
 	}
 }
 
-func OrgRole(org string, team string) (orgRole string) {
-	return _getOrgRole(org, team, _getLogin())
-}
-
-func _getOrgRole(org string, team string, login string) string {
-	restClient, err := gh.RESTClient(nil)
+func OrgRole(org string, team string, login string) string {
+	restClient, err := api.DefaultRESTClient()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,29 +30,14 @@ func _getOrgRole(org string, team string, login string) string {
 	var resp map[string]interface{}
 	err = restClient.Get(path, &resp)
 	if err != nil {
-		if err.(api.HTTPError).StatusCode == 404 {
-			log.Fatal(fmt.Errorf("user has no role in %s", NestedEntityName(org, team)))
+		// We can't seem to parse the error response to check the status code
+		// so we'll just check the error message instead.
+		// https://github.com/cli/go-gh/issues/118
+		if strings.Contains(err.Error(), "Not Found") {
+			noRoleErr(login, NestedEntityName(org, team))
 		}
 		log.Fatal(err)
 	}
 
 	return resp["role"].(string)
-}
-
-func _getLogin() string {
-	// GitHub CLI doesn't make it easy to get the current user's login.
-	// I could either parse it from the verbose `gh auth status` or make an API call.
-	// Since the status is subject to change, I'll just make the API call.
-	gqlClient, err := gh.GQLClient(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var query LoginQuery
-	err = gqlClient.Query("LoginQuery", &query, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return query.Viewer.Login
 }
