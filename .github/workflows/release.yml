@@ -2,7 +2,8 @@ name: release
 on:
   push:
     tags:
-      - "v*"
+      # Only run on semver tags, but not prereleases 
+      - "v[0-9]+.[0-9]+.[0-9]+"
 permissions:
   contents: write
 
