@@ -13,6 +13,7 @@ func main() {
 	org := flag.String("o", "", "The org for which to check roles. If blank, defaults to repo check. If present, repo flag will be ignored.")
 	team := flag.String("t", "", "The team for which to check roles. Only valid in combination with org flag.")
 	user := flag.String("u", "", "The user login for which to check roles. If blank, the current user is used.")
+	host := flag.String("hostname", "", "The host for which to check roles. If blank, defaults to the gh config. Note that you will need to be be authenticated for the host through the gh cli.")
 	friendly := flag.Bool("f", false, "Prints a friendly message. Otherwise, prints a machine-readable role name.")
 	// Overrides default help message to inform about args
 	defaultUsage := flag.Usage
@@ -30,7 +31,7 @@ func main() {
 	}
 
 	if *org != "" {
-		err := Evaluate(*user, NestedEntityName(*org, *team), OrgRole(*org, *team, *user), roles, *friendly)
+		err := Evaluate(*user, NestedEntityName(*org, *team), OrgRole(*org, *team, *user, *host), roles, *friendly)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -38,14 +39,15 @@ func main() {
 	}
 
 	// Check repo roles
-	repository := _getRepo(*repo)
+	repository := _getRepo(*repo, *host)
 	var userRole string
 	if isViewer {
+		// Much faster to use viewerPermission check
 		userRole = RepoRoleForViewer(repository)
 	} else {
-		userRole = RepoRoleForUser(repository, *user)
+		userRole = RepoRoleForUser(repository, *user, *host)
 	}
-	err := Evaluate(*user, _getRepoPath(repository), userRole, roles, *friendly)
+	err := Evaluate(*user, _repoPath(repository), userRole, roles, *friendly)
 	if err != nil {
 		log.Fatal(err)
 	}

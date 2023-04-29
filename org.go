@@ -13,8 +13,11 @@ type LoginQuery struct {
 	}
 }
 
-func OrgRole(org string, team string, login string) string {
-	restClient, err := api.DefaultRESTClient()
+func OrgRole(org string, team string, login string, host string) string {
+	opts := api.ClientOptions{
+		Host: host,
+	}
+	restClient, err := api.NewRESTClient(opts)
 	if err != nil {
 		log.Fatal(err)
 	}
