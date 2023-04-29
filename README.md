@@ -28,11 +28,11 @@ Without listing role names, `gh role` simply returns the current user's role. Th
     // Exits with code 0
 
     gh role -r nedredmond/gh-role -f
-    // nedredmond has admin role on nedredmond/gh-role.
+    // nedredmond has admin role in github.com/nedredmond/gh-role.
     // Exits with code 0
 
     gh role -r nedredmond/gh-role -f maintain friend lover
-    // 2022/11/20 01:01:00 nedredmond does not have roles in nedredmond/gh-role: maintain, friend, lover; found admin
+    // 2022/11/20 01:01:00 nedredmond does not have roles in github.com/nedredmond/gh-role: maintain, friend, lover; found admin
     // Exits with code 0
     ```
 
@@ -50,7 +50,7 @@ If roles are listed (after all flags), the command will exit with exit code 1 if
 
     ```bash
     gh role -r canada-ca/ore-ero write admin
-    // 2022/11/20 01:01:00 nedredmond does not have roles in canada-ca/ore-ero: write, admin; found read
+    // 2022/11/20 01:01:00 nedredmond does not have roles in github.com/cli/cli: write, admin; found read
     // Exits with error code 1
     ```
 
@@ -86,7 +86,7 @@ As of v3, you can now check the role of any arbitrary user instead of just the c
 
     ```bash
     gh role -r jedi/council -u anakin -f master
-    // 2023/04/28 01:01:00 akakin does not have role in jedi/council: master; found knight
+    // 2023/04/28 01:01:00 akakin does not have role in github.com/jedi/council: master; found knight
     // Exits with error code 1
     ```
 
@@ -111,6 +111,7 @@ Team roles include `maintainer` and `member`. See [the response schema](https://
 - __`-o`__ The org to check roles on. If blank, defaults to repo check.
 - __`-t`__ The team for which to check roles. Only valid in combination with org flag.
 - __`-u`__ The user to check roles for. Defaults to the current user.
+- __`-host`__ The host for which to check roles. If blank, defaults to the gh config. Note that you will need to be be authenticated for the host through the gh cli.
 - __`-f`__ Prints a friendly message instead of the simple role name.
   - i.e., `nedredmond has admin role in nedredmond/gh-role.`
 - After any flags, list the roles you want to verify, separated by spaces. If none are provided, the command will print your current role instead.

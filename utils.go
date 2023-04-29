@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -17,5 +16,5 @@ func NestedEntityName(entities ...string) string {
 }
 
 func noRoleErr(user string, entity string) {
-	log.Fatal(fmt.Sprintf("%s has no role in %s", user, entity))
+	log.Fatalf("%s has no role in %s", user, entity)
 }

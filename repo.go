@@ -2,18 +2,22 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/cli/go-gh/v2"
-	"github.com/cli/go-gh/v2/pkg/api"
 	"github.com/cli/go-gh/v2/pkg/repository"
-	graphql "github.com/cli/shurcooL-graphql"
 )
 
-func _getRepo(path string) (repo repository.Repository) {
+func _getRepo(path string, host string) (repo repository.Repository) {
 	var err error
 	if path == "" {
 		repo, err = repository.Current()
+		if host != "" {
+			repo.Host = host
+		}
+	} else if host != "" {
+		repo, err = repository.ParseWithHost(path, host)
 	} else {
 		repo, err = repository.Parse(path)
 	}
@@ -23,10 +27,13 @@ func _getRepo(path string) (repo repository.Repository) {
 	return
 }
 
+func _repoPath(repo repository.Repository) string {
+	return repo.Host + "/" + repo.Owner + "/" + repo.Name
+}
+
 func RepoRoleForViewer(repo repository.Repository) (repoRole string) {
 	// Build the command
-	repoPath := repo.Owner + "/" + repo.Name
-	ghArgs := []string{"repo", "view", repoPath, "--json", "viewerPermission"}
+	ghArgs := []string{"repo", "view", _repoPath(repo), "--json", "viewerPermission"}
 
 	// Execute the command
 	stdOut, _, err := gh.Exec(ghArgs...)
@@ -46,38 +53,32 @@ func RepoRoleForViewer(repo repository.Repository) (repoRole string) {
 	return result.Role
 }
 
-func _getRepoPath(repo repository.Repository) string {
-	return repo.Owner + "/" + repo.Name
-}
-
 func RepoRoleForUser(
 	repo repository.Repository,
 	login string,
+	host string,
 ) (repoRole string) {
-	client, err := api.DefaultGraphQLClient()
+	// Build the command
+	ghArgs := []string{"api", "-H", "Accept: application/vnd.github+json", "-H", "X-GitHub-Api-Version: 2022-11-28"}
+	if host != "" {
+		ghArgs = append(ghArgs, "--hostname", host)
+	}
+	ghArgs = append(ghArgs, fmt.Sprintf("/repos/%s/%s/collaborators/%s/permission", repo.Owner, repo.Name, login))
+
+	// Execute the command
+	stdOut, _, err := gh.Exec(ghArgs...)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var query struct {
-		Repository struct {
-			Collaborators struct {
-				Edges []struct {
-					Permission string
-				}
-			} `graphql:"collaborators(login: $login)"`
-		} `graphql:"repository(owner: $owner, name: $name)"`
+
+	// Parse the output
+	var result struct {
+		Role string `json:"permission"`
 	}
-	variables := map[string]interface{}{
-		"owner": graphql.String(repo.Owner),
-		"name":  graphql.String(repo.Name),
-		"login": graphql.String(login),
-	}
-	err = client.Query("UserRepoPermission", &query, variables)
+	err = json.Unmarshal(stdOut.Bytes(), &result)
 	if err != nil {
-		log.Fatalf("unable to query %s's role in %s: %s", login, _getRepoPath(repo), err)
+		log.Fatal(err)
 	}
-	if err != nil || len(query.Repository.Collaborators.Edges) == 0 {
-		noRoleErr(login, _getRepoPath(repo))
-	}
-	return query.Repository.Collaborators.Edges[0].Permission
-}
+
+	return result.Role
+}	
